@@ -1,13 +1,13 @@
 # Plano do projeto: yt-dlp UI
 
 > Status: **todas as fases (0–8) concluídas**. Próximos passos: features futuras F1–F6. Stack: Electron + React + TypeScript (ver [decisoes/0001-stack.md](decisoes/0001-stack.md)).
-> Última revisão: 2026-11-10.
+> Última revisão: 2026-11-11.
 
 ## 1. Objetivo
 
 UI desktop que encapsula **yt-dlp + ffmpeg** (e outras ferramentas) para baixar playlists de música do YouTube na melhor qualidade de áudio. Referências: MediaHuman YouTube to MP3 Converter e Stacher.
 
-- **Uso:** pessoal, por enquanto.
+- **Uso:** público. Código aberto (MIT), instalador no GitHub Releases e página no GitHub Pages ([ADR 0003](decisoes/0003-distribuicao-github.md)).
 - **Execução:** `npm run dev` (ou equivalente) e, opcionalmente, um executável.
 
 ## 2. Requisitos
@@ -225,6 +225,7 @@ Desligado, a capa mantém a proporção original (16:9).
 | # | Feature |
 |---|---|
 | A2 | Reabrir de onde parou (última playlist, filtros, seleção, rolagem). Ver [modulos/ui-playlist.md](modulos/ui-playlist.md#reabrir-de-onde-parou-sessão) ✅ |
+| A3 | Distribuição pública: README, licença MIT, CI, release automático, página no GitHub Pages e botão "Instalar tudo" nas dependências. Ver [modulos/distribuicao.md](modulos/distribuicao.md) ✅ |
 | A1 | Substituir faixa indisponível por outro vídeo (link ou busca), mantendo a posição. Ver [modulos/replace.md](modulos/replace.md) ✅ |
 
 ## 8. Decisões
@@ -232,6 +233,6 @@ Desligado, a capa mantém a proporção original (16:9).
 | Tema | Decisão |
 |---|---|
 | Formato padrão | Original (opus/m4a). mp3 é feature futura (F1). |
-| Distribuição | Uso pessoal; rodar com `npm run dev` ou executável. |
+| Distribuição | Pública e gratuita: GitHub Releases (gerado pelo Actions) + página no GitHub Pages, sem assinatura de código: ver [decisoes/0003-distribuicao-github.md](decisoes/0003-distribuicao-github.md). |
 | Stack | Electron + React + TypeScript (Zustand, Tailwind, electron-vite, electron-builder): ver [decisoes/0001-stack.md](decisoes/0001-stack.md). |
 | Banco | SQLite via `node:sqlite` embutido, sem módulo nativo: ver [decisoes/0002-sqlite.md](decisoes/0002-sqlite.md). |

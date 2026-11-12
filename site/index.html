@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>yt-dlp UI</title>
+  <meta name="description" content="Baixe playlists de música do YouTube na melhor qualidade, com capa embutida. Gratuito e de código aberto, para Windows.">
+  <link rel="icon" href="icon.png">
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --surface: #ffffff;
+      --text: #111827;
+      --muted: #5b6472;
+      --border: #e3e6eb;
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
+      --accent-text: #ffffff;
+      --code-bg: #eef1f5;
+      --warn-bg: #fff7e6;
+      --warn-border: #f5d28a;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --surface: #161b22;
+        --text: #e6edf3;
+        --muted: #9aa4b2;
+        --border: #2a313c;
+        --accent: #0ea5e9;
+        --accent-hover: #38bdf8;
+        --accent-text: #04121c;
+        --code-bg: #1f2630;
+        --warn-bg: #2a2214;
+        --warn-border: #6b5222;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    a { color: var(--accent); }
+    .wrap { max-width: 880px; margin: 0 auto; padding: 0 16px; }
+    header.hero { padding: 64px 0 40px; text-align: center; }
+    .hero img.logo { width: 96px; height: 96px; }
+    .hero h1 { font-size: 2.4rem; margin: 12px 0 4px; letter-spacing: -0.02em; }
+    .hero p.tagline { font-size: 1.15rem; color: var(--muted); margin: 0 auto 28px; max-width: 560px; }
+    .buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; flex-direction: column; align-items: center;
+      padding: 14px 26px; border-radius: 10px; text-decoration: none; font-weight: 600;
+      border: 1px solid var(--border); color: var(--text); background: var(--surface);
+    }
+    .btn small { font-weight: 400; font-size: 0.8rem; color: var(--muted); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    .btn.primary small { color: inherit; opacity: 0.85; }
+    .btn.primary:hover { background: var(--accent-hover); }
+    .btn:not(.primary):hover { border-color: var(--accent); }
+    .meta { margin-top: 14px; font-size: 0.9rem; color: var(--muted); }
+    .shot { margin: 8px 0 48px; }
+    .shot img { width: 100%; border-radius: 10px; border: 1px solid var(--border); display: block; }
+    section { padding: 28px 0; border-top: 1px solid var(--border); }
+    h2 { font-size: 1.4rem; margin: 0 0 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+    .card strong { display: block; margin-bottom: 2px; }
+    .card span { color: var(--muted); font-size: 0.95rem; }
+    ol.steps { padding-left: 22px; }
+    ol.steps li { margin-bottom: 10px; }
+    .note { background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 10px; padding: 12px 16px; font-size: 0.95rem; }
+    code { background: var(--code-bg); padding: 1px 6px; border-radius: 4px; font-size: 0.9em; overflow-wrap: anywhere; }
+    details { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px; margin-bottom: 10px; }
+    summary { cursor: pointer; font-weight: 600; }
+    footer { padding: 32px 0 48px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.9rem; text-align: center; }
+    @media (max-width: 520px) {
+      .hero h1 { font-size: 1.9rem; }
+      .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <img class="logo" src="icon.png" alt="">
+      <h1>yt-dlp UI</h1>
+      <p class="tagline">Baixe playlists de música do YouTube na melhor qualidade de áudio, com capa embutida. Gratuito, de código aberto e sem anúncios.</p>
+      <div class="buttons">
+        <a class="btn primary" id="dl-setup" href="https://github.com/luizcomparin/yt-dlp-ui/releases/latest/download/yt-dlp-ui-setup.exe">
+          Baixar instalador
+          <small>Windows 10/11 · 64 bits</small>
+        </a>
+        <a class="btn" id="dl-portable" href="https://github.com/luizcomparin/yt-dlp-ui/releases/latest/download/yt-dlp-ui-portable.exe">
+          Versão portátil
+          <small>arquivo único, sem instalar</small>
+        </a>
+      </div>
+      <p class="meta" id="release-meta">&nbsp;</p>
+    </header>
+
+    <!-- adicione site/screenshot.png para exibir um print do app; sem o arquivo, o bloco some -->
+    <div class="shot"><img src="screenshot.png" alt="Tela do yt-dlp UI com uma playlist carregada" onerror="this.parentElement.remove()"></div>
+
+    <section>
+      <h2>O que ele faz</h2>
+      <div class="grid">
+        <div class="card"><strong>Melhor qualidade</strong><span>Baixa o áudio original (opus/m4a) sem recodificar, ou no formato que você escolher.</span></div>
+        <div class="card"><strong>Capa e título</strong><span>Thumbnail embutida como capa (com opção de recorte quadrado) e o título do vídeo no nome do arquivo.</span></div>
+        <div class="card"><strong>Playlists inteiras</strong><span>Lista as faixas com duração e tamanho; ordene, filtre e escolha o que baixar.</span></div>
+        <div class="card"><strong>Fila confiável</strong><span>Pausar e retomar, vários downloads ao mesmo tempo, erros que não travam o resto.</span></div>
+        <div class="card"><strong>Sincronizar</strong><span>Rode de novo na mesma playlist e baixe só as faixas novas.</span></div>
+        <div class="card"><strong>Extras</strong><span>Gera <code>.m3u</code>, detecta links copiados, avisa duplicadas e notifica ao terminar.</span></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Como instalar</h2>
+      <ol class="steps">
+        <li>Clique em <strong>Baixar instalador</strong> e abra o arquivo <code>yt-dlp-ui-setup.exe</code>.</li>
+        <li>Se aparecer <em>"O Windows protegeu o computador"</em>, clique em <strong>Mais informações</strong> → <strong>Executar assim mesmo</strong> (veja o aviso abaixo).</li>
+        <li>Siga o instalador. Ele cria atalhos no Menu Iniciar e na Área de Trabalho.</li>
+        <li>Na primeira vez que abrir o app, clique em <strong>Instalar tudo</strong> no painel de dependências. Ele baixa sozinho o yt-dlp, o ffmpeg e o deno (leva menos de um minuto).</li>
+        <li>Cole o link de uma playlist, clique em <strong>Carregar</strong>, selecione as faixas e clique em <strong>Baixar selecionadas</strong>.</li>
+      </ol>
+      <p class="note"><strong>Sobre o aviso do Windows:</strong> o app não tem assinatura digital paga, então o SmartScreen não o reconhece. O código é aberto e o executável é gerado automaticamente pelo GitHub a partir dele. Se preferir, confira o código ou compile você mesmo.</p>
+    </section>
+
+    <section>
+      <h2>Perguntas frequentes</h2>
+      <details>
+        <summary>Instalador ou versão portátil?</summary>
+        <p>O <strong>instalador</strong> é o mais prático: abre rápido, cria atalhos e tem desinstalador. A <strong>versão portátil</strong> é um arquivo único que roda sem instalar (bom para pendrive), mas demora uns segundos a mais para abrir.</p>
+      </details>
+      <details>
+        <summary>Onde ficam as músicas e os dados do app?</summary>
+        <p>As músicas vão para <code>Música\yt-dlp-ui</code> (dá para trocar no app). Configurações, cache e as ferramentas baixadas ficam em <code>%APPDATA%\yt-dlp UI\</code>.</p>
+      </details>
+      <details>
+        <summary>Parou de baixar do YouTube. E agora?</summary>
+        <p>O YouTube muda com frequência. Abra o painel ⚙ e clique em <strong>atualizar</strong> ao lado do yt-dlp. Na maioria das vezes isso resolve.</p>
+      </details>
+      <details>
+        <summary>Funciona no Mac ou no Linux?</summary>
+        <p>Por enquanto, só no Windows 10/11 de 64 bits.</p>
+      </details>
+      <details>
+        <summary>É gratuito mesmo?</summary>
+        <p>Sim. O app é de código aberto (licença MIT) e usa ferramentas também gratuitas: <a href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a>, <a href="https://ffmpeg.org/">ffmpeg</a> e <a href="https://deno.com/">deno</a>.</p>
+      </details>
+    </section>
+
+    <section>
+      <h2>Uso responsável</h2>
+      <p>Use o app apenas com conteúdo que você tem direito de baixar, respeitando os termos do YouTube e a legislação de direitos autorais do seu país. O app não hospeda nem distribui nenhum conteúdo.</p>
+    </section>
+
+    <footer>
+      <a href="https://github.com/luizcomparin/yt-dlp-ui">Código no GitHub</a> ·
+      <a href="https://github.com/luizcomparin/yt-dlp-ui/releases">Todas as versões</a> ·
+      <a href="https://github.com/luizcomparin/yt-dlp-ui/issues">Reportar um problema</a>
+      <br>Licença MIT · feito com yt-dlp, ffmpeg e Electron
+    </footer>
+  </div>
+
+  <script>
+    // Mostra versão, data e tamanho do último release (API pública do GitHub, sem token).
+    // Se ainda não houver release, os botões levam para a página de releases.
+    (async () => {
+      const meta = document.getElementById('release-meta')
+      const releasesUrl = 'https://github.com/luizcomparin/yt-dlp-ui/releases'
+      try {
+        const res = await fetch('https://api.github.com/repos/luizcomparin/yt-dlp-ui/releases/latest')
+        if (res.status === 404) {
+          meta.textContent = 'Ainda não há uma versão publicada.'
+          for (const id of ['dl-setup', 'dl-portable']) document.getElementById(id).href = releasesUrl
+          return
+        }
+        if (!res.ok) return
+        const rel = await res.json()
+        const size = (name) => {
+          const a = (rel.assets || []).find((x) => x.name === name)
+          return a ? ` · ${(a.size / 1048576).toFixed(0)} MB` : ''
+        }
+        const date = new Date(rel.published_at).toLocaleDateString('pt-BR')
+        meta.textContent = `Versão ${rel.tag_name.replace(/^v/, '')} · ${date}${size('yt-dlp-ui-setup.exe')}`
+      } catch {
+        // sem rede ou limite da API: os links diretos continuam funcionando
+      }
+    })()
+  </script>
+</body>
+</html>

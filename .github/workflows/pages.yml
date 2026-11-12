@@ -1,0 +1,36 @@
+# Publica a página do app (pasta site/) no GitHub Pages.
+# Pré-requisito (uma vez): Settings → Pages → Source: "GitHub Actions".
+# Ver app/docs/modulos/distribuicao.md
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ['site/**', 'app/build/icon.png', '.github/workflows/pages.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Copiar o ícone do app para a página
+        run: cp app/build/icon.png site/icon.png
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4

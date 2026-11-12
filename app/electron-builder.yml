@@ -1,7 +1,7 @@
 # Empacotamento (fase 8). Ver docs/modulos/empacotamento.md
 appId: com.ytdlpui.app
 productName: yt-dlp UI
-copyright: Uso pessoal
+copyright: Copyright © 2026 Luiz Carlos Comparin (licença MIT)
 directories:
   buildResources: build
   output: dist
@@ -11,11 +11,13 @@ files:
   - out/**/*
   - package.json
 asar: true
+# Nomes fixos (sem versão e sem espaço): permitem o link permanente
+# github.com/<dono>/<repo>/releases/latest/download/<arquivo>. Ver docs/modulos/distribuicao.md
 win:
   icon: build/icon.png
   target:
     - portable
-  artifactName: ${productName}-${version}-portable.${ext}
+  artifactName: yt-dlp-ui-portable.${ext}
 portable:
   # extrai para uma pasta fixa em %TEMP% (inicia mais rápido nas próximas vezes)
   unpackDirName: yt-dlp-ui-portable
@@ -24,4 +26,4 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
-  artifactName: ${productName}-${version}-setup.${ext}
+  artifactName: yt-dlp-ui-setup.${ext}

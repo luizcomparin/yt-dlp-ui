@@ -1,0 +1,52 @@
+# Publica um release com o instalador e o portable ao criar uma tag vX.Y.Z:
+#   1. (em app/) npm version 0.2.0 --no-git-tag-version   (só altera package.json e lock)
+#   2. git commit -am "v0.2.0" && git tag v0.2.0 && git push origin main v0.2.0
+# Ver app/docs/modulos/distribuicao.md
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write # criar o release e anexar os arquivos
+
+jobs:
+  release:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: app
+    env:
+      # sem certificado: não tenta assinar (ver ADR 0003)
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: app/.nvmrc
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Conferir versão da tag × package.json
+        shell: bash
+        run: |
+          pkg="v$(node -p "require('./package.json').version")"
+          if [ "$pkg" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::A tag $GITHUB_REF_NAME não bate com a versão do package.json ($pkg)"
+            exit 1
+          fi
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run dist:release
+
+      - name: Criar release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: yt-dlp UI ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            app/dist/yt-dlp-ui-setup.exe
+            app/dist/yt-dlp-ui-portable.exe

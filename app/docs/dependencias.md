@@ -34,6 +34,16 @@ Os binários baixados ficam em `%APPDATA%\yt-dlp UI\bin\`.
 | `electron-builder` | Gera a pasta, o portable e o instalador (`npm run dist`, `npm run dist:installer`; config em `electron-builder.yml`) |
 | `vitest` | Testes unitários das funções puras (`npm test`, config em `vitest.config.mts`) |
 
+## Publicação (GitHub)
+
+| Ferramenta | Para quê |
+|---|---|
+| GitHub Actions | CI (typecheck + testes), build dos executáveis e deploy da página. Gratuito para repo público ([distribuição](modulos/distribuicao.md)) |
+| `softprops/action-gh-release` | Cria o release e anexa os `.exe` |
+| GitHub Pages | Hospeda a página pública (`site/`) |
+
+Versão do Node para desenvolvimento: **22.5+** (`engines` no `package.json`), recomendada **24** (`.nvmrc`, a mesma usada no CI).
+
 ## Armadilhas conhecidas
 
 - **Encoding da saída do yt-dlp no Windows:** com stdout em pipe, o yt-dlp usa a code page do console e descarta caracteres não ASCII (títulos em coreano, japonês, emoji…). `PYTHONUTF8=1` **não** basta: é preciso passar `--encoding utf-8`. Para o caminho final, o app usa `%(filepath)j` (JSON com escapes).

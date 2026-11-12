@@ -5,20 +5,23 @@
 
 ## Como gerar
 ```bash
-npm run dist            # dist/win-unpacked/ (pasta) + dist/yt-dlp UI-<versão>-portable.exe
-npm run dist:installer  # dist/yt-dlp UI-<versão>-setup.exe (instalador NSIS)
+npm run dist            # dist/win-unpacked/ (pasta) + dist/yt-dlp-ui-portable.exe
+npm run dist:installer  # dist/yt-dlp-ui-setup.exe (instalador NSIS)
+npm run dist:release    # instalador + portátil, usado pelo GitHub Actions
 npm run icon            # regera build/icon.png (512×512) — opcional
 ```
 
 | Saída | Tamanho | Início (medido) | Quando usar |
 |---|---|---|---|
 | **`win-unpacked\yt-dlp UI.exe`** (pasta) | 358 MB | **1,7 s** | **Recomendado para uso pessoal.** Copie a pasta para onde quiser e crie um atalho para o `.exe` |
-| `…-portable.exe` (arquivo único) | 105 MB | ~12 s | Levar num pendrive. A cada execução extrai tudo para `%TEMP%\yt-dlp-ui-portable` |
-| `…-setup.exe` (instalador) | 116 MB | ~2 s (depois de instalado) | Atalhos no Menu Iniciar e na Área de Trabalho, desinstalador. Escolhe a pasta de instalação |
+| `yt-dlp-ui-portable.exe` (arquivo único) | 105 MB | ~12 s | Levar num pendrive. A cada execução extrai tudo para `%TEMP%\yt-dlp-ui-portable` |
+| `yt-dlp-ui-setup.exe` (instalador) | 116 MB | ~2 s (depois de instalado) | Atalhos no Menu Iniciar e na Área de Trabalho, desinstalador. Escolhe a pasta de instalação |
 
 **Avisos:**
 - **SmartScreen:** os executáveis **não são assinados** (`no code signing certificate`). Na primeira execução o Windows pode mostrar "O Windows protegeu o computador" → "Mais informações" → "Executar assim mesmo".
 - **Tamanho:** as dependências externas (yt-dlp, deno, ffmpeg) **não** vão no executável. O app as baixa na primeira execução (painel ⚙), e o yt-dlp pode ser atualizado sem gerar um executável novo.
+
+**Nomes fixos:** os arquivos não levam versão no nome, para que o link `releases/latest/download/<arquivo>` funcione. A publicação no GitHub está em [distribuição](distribuicao.md).
 
 ## O que vai no pacote
 - **Conteúdo:** só `out/` (build do electron-vite) e `package.json`, dentro de `app.asar`.

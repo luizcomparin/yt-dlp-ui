@@ -3,8 +3,17 @@
   "productName": "yt-dlp UI",
   "version": "0.1.0",
   "description": "UI desktop para yt-dlp + ffmpeg focada em baixar playlists de música",
-  "author": "yt-dlp UI",
+  "author": "Luiz Carlos Comparin",
+  "license": "MIT",
+  "homepage": "https://luizcomparin.github.io/yt-dlp-ui/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/luizcomparin/yt-dlp-ui.git"
+  },
   "private": true,
+  "engines": {
+    "node": ">=22.5"
+  },
   "main": "./out/main/index.js",
   "scripts": {
     "postinstall": "install-electron",
@@ -18,7 +27,8 @@
     "test:watch": "vitest",
     "icon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/make-icon.ps1",
     "dist": "npm run build && electron-builder --win dir portable",
-    "dist:installer": "npm run build && electron-builder --win nsis"
+    "dist:installer": "npm run build && electron-builder --win nsis",
+    "dist:release": "npm run build && electron-builder --win nsis portable --publish never"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.5",

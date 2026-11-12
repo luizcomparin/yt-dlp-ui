@@ -1,0 +1,27 @@
+# Testes e typecheck a cada push/PR. Gratuito para repositórios públicos.
+# Ver app/docs/modulos/distribuicao.md
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths: ['app/**', '.github/workflows/ci.yml']
+  pull_request:
+    paths: ['app/**', '.github/workflows/ci.yml']
+
+jobs:
+  test:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: app/.nvmrc
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test

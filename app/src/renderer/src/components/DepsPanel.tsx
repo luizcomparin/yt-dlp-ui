@@ -5,7 +5,12 @@ const SOURCE_LABEL = { managed: 'gerenciado', system: 'sistema', custom: 'custom
 
 export function DepsPanel() {
   // a verificação inicial é feita pelo App (para saber se faltam dependências mesmo com o painel fechado)
-  const { statuses, loading, progress, message, refresh, install, updateYtdlp } = useDeps()
+  const { statuses, loading, progress, message, refresh, install, installAll, updateYtdlp } = useDeps()
+  const missing = statuses.filter((d) => !d.installed)
+  const anyBusy = statuses.some((d) => {
+    const phase = progress[d.name]?.phase
+    return phase === 'downloading' || phase === 'extracting'
+  })
 
   return (
     <section className="rounded-lg border border-white/10 bg-white/2 p-3">
@@ -15,6 +20,17 @@ export function DepsPanel() {
           {loading ? 'verificando…' : 'verificar'}
         </button>
       </div>
+
+      {missing.length > 0 && (
+        <button
+          className="mb-3 w-full rounded bg-sky-600 px-3 py-1.5 text-xs font-medium hover:bg-sky-500 disabled:opacity-50"
+          disabled={anyBusy || loading}
+          onClick={() => void installAll()}
+          title={`Baixa e instala: ${missing.map((d) => d.name).join(', ')}`}
+        >
+          {anyBusy ? 'instalando…' : `Instalar tudo (${missing.map((d) => d.name).join(', ')})`}
+        </button>
+      )}
 
       <ul className="space-y-2">
         {statuses.map((d) => {

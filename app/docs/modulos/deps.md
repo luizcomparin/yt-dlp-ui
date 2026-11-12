@@ -35,6 +35,8 @@ Localizar, verificar (versão), baixar e atualizar os binários externos: **yt-d
 | deno | `github.com/denoland/deno/releases/latest/download/deno-x86_64-pc-windows-msvc.zip` |
 | ffmpeg | `github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip` |
 
+**Instalar tudo** (UI): quando falta alguma dependência, o painel mostra o botão **Instalar tudo**, que chama `deps:install` em paralelo para cada uma que falta (`installAll` em `store/deps.ts`). Os erros de cada instalação são juntados na mensagem do painel; as que deram certo continuam instaladas.
+
 ## Interface (IPC)
 | Canal | Parâmetros | Retorno |
 |---|---|---|

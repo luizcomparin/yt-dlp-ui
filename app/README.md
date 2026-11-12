@@ -1,39 +1,16 @@
-# yt-dlp UI
+# yt-dlp UI: código do app
 
-UI desktop (Electron + React + TypeScript) para yt-dlp + ffmpeg, focada em baixar playlists de música do YouTube na melhor qualidade de áudio, com capa embutida.
+Esta pasta contém o código do app (Electron + React + TypeScript). Instruções de instalação, desenvolvimento, build e a lista de dependências estão no [README principal](../README.md).
 
-## Usar o executável
+Resumo:
 
 ```bash
 npm install
-npm run dist
-```
-
-Depois, abra **`dist\win-unpacked\yt-dlp UI.exe`**. A pasta inteira pode ser copiada para qualquer lugar; crie um atalho para o `.exe`.
-
-Alternativas:
-- **Arquivo único:** `dist\yt-dlp UI-<versão>-portable.exe` (abre mais devagar).
-- **Instalador:** `npm run dist:installer` gera `dist\yt-dlp UI-<versão>-setup.exe`, com atalhos e desinstalador.
-
-Os executáveis não são assinados. Se o Windows mostrar "O Windows protegeu o computador", clique em "Mais informações" → "Executar assim mesmo".
-
-## Desenvolvimento
-
-```bash
-npm install     # também baixa o binário do Electron
-npm run dev     # abre o app com hot reload
-npm test        # testes unitários
+npm run dev             # desenvolvimento
+npm test                # testes
 npm run typecheck
+npm run dist            # dist/win-unpacked/ + dist/yt-dlp-ui-portable.exe
+npm run dist:installer  # dist/yt-dlp-ui-setup.exe
 ```
 
-## Primeiro uso
-1. **Dependências:** o painel ⚙ abre sozinho se faltar algo. Clique em **instalar** no yt-dlp e no deno; o ffmpeg é detectado no PATH ou pode ser instalado pelo mesmo painel.
-2. **Pasta de destino:** padrão `Música\yt-dlp-ui`.
-3. **Carregar:** cole o link da playlist e clique em **Carregar**. As faixas aparecem na hora; datas e tamanhos chegam aos poucos.
-4. **Escolher:** ordene, filtre, selecione e clique em **Baixar selecionadas**.
-
-Os dados do app (configurações, cache, fila, logs, binários) ficam em `%APPDATA%\yt-dlp UI\`.
-
-## Documentação
-
-Ver [docs/README.md](docs/README.md). O plano completo está em [docs/plano.md](docs/plano.md).
+Documentação técnica: [docs/README.md](docs/README.md).

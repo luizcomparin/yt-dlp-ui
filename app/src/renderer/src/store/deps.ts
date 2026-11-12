@@ -8,6 +8,8 @@ interface DepsState {
   message: string | null
   refresh(): Promise<void>
   install(name: DepName): Promise<void>
+  /** Instala, em paralelo, todas as dependências que estão faltando. */
+  installAll(): Promise<void>
   updateYtdlp(): Promise<void>
 }
 
@@ -33,6 +35,19 @@ export const useDeps = create<DepsState>((set, get) => ({
     } catch (e) {
       set({ message: `Erro ao instalar ${name}: ${(e as Error).message}` })
     }
+    await get().refresh()
+  },
+
+  installAll: async () => {
+    const missing = get().statuses.filter((d) => !d.installed).map((d) => d.name)
+    if (missing.length === 0) return
+    set({ message: null })
+    // em paralelo: o main já deduplica chamadas simultâneas da mesma dependência
+    const results = await Promise.allSettled(missing.map((name) => window.api.deps.install(name)))
+    const errors = results.flatMap((r, i) =>
+      r.status === 'rejected' ? [`Erro ao instalar ${missing[i]}: ${(r.reason as Error).message}`] : []
+    )
+    if (errors.length) set({ message: errors.join('\n') })
     await get().refresh()
   },
 
