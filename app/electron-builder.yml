@@ -1,0 +1,27 @@
+# Empacotamento (fase 8). Ver docs/modulos/empacotamento.md
+appId: com.ytdlpui.app
+productName: yt-dlp UI
+copyright: Uso pessoal
+directories:
+  buildResources: build
+  output: dist
+# só o build do electron-vite: o main usa apenas módulos embutidos (electron, node:*),
+# e a UI já vem empacotada pelo Vite — node_modules não é necessário em runtime.
+files:
+  - out/**/*
+  - package.json
+asar: true
+win:
+  icon: build/icon.png
+  target:
+    - portable
+  artifactName: ${productName}-${version}-portable.${ext}
+portable:
+  # extrai para uma pasta fixa em %TEMP% (inicia mais rápido nas próximas vezes)
+  unpackDirName: yt-dlp-ui-portable
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  artifactName: ${productName}-${version}-setup.${ext}
