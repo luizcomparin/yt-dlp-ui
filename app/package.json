@@ -1,7 +1,7 @@
 {
   "name": "yt-dlp-ui",
   "productName": "yt-dlp UI",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "UI desktop para yt-dlp + ffmpeg focada em baixar playlists de música",
   "author": "Luiz Carlos Comparin",
   "license": "MIT",
