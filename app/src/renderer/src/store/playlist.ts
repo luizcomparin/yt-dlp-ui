@@ -1,8 +1,8 @@
 import { create } from 'zustand'
 import type { PlaylistEvent, PlaylistInfo, Track } from '@shared/ipc'
-import { isUnavailable, SORT_PRESETS, type AvailabilityFilter } from '@shared/tracks'
+import { CUSTOM_SORT_ID, isUnavailable, moveToPosition, SORT_PRESETS, type AvailabilityFilter } from '@shared/tracks'
 import { nameKey } from '@shared/duplicates'
-import { savedSelection } from './session'
+import { savedCustomOrder, savedSelection } from './session'
 
 export { isUnavailable }
 
@@ -21,6 +21,8 @@ interface PlaylistState {
   // ---- visão (fase 3) ----
   /** id de SORT_PRESETS (R4). Também define a ordem de download. */
   sortId: string
+  /** Ordem manual (rowIds) da opção "Personalizada"; null = ainda não montada para esta playlist. */
+  customOrder: string[] | null
   filterText: string
   /** Filtro R6: exibir privados/removidos/indisponíveis. */
   availabilityFilter: AvailabilityFilter
@@ -41,6 +43,11 @@ interface PlaylistState {
   applyEvent(e: PlaylistEvent): void
 
   setSort(id: string): void
+  /**
+   * Move a faixa para a posição dada (1 = primeira) a partir da ordem exibida (`currentIds`, sem filtros),
+   * e passa a ordenação para "Personalizada".
+   */
+  moveTrack(rowId: string, position: number, currentIds: string[]): void
   setFilterText(text: string): void
   setAvailabilityFilter(f: AvailabilityFilter): void
   /** Alterna uma faixa; com shift, aplica o mesmo valor ao intervalo desde o último clique (na ordem visível). */
@@ -86,6 +93,7 @@ export const usePlaylist = create<PlaylistState>((set, get) => ({
   warnings: [],
   error: null,
   sortId: SORT_PRESETS[0].id,
+  customOrder: null,
   filterText: '',
   availabilityFilter: 'all',
   selected: {},
@@ -110,6 +118,11 @@ export const usePlaylist = create<PlaylistState>((set, get) => ({
             selected: saved?.selected ?? {},
             formatOverride: saved?.formatOverride ?? {},
             lastClicked: null,
+            // a ordem manual é de cada playlist; sem ela, "Personalizada" volta para a ordem da playlist
+            ...(() => {
+              const customOrder = savedCustomOrder(url)
+              return { customOrder, ...(!customOrder && get().sortId === CUSTOM_SORT_ID ? { sortId: SORT_PRESETS[0].id } : {}) }
+            })(),
             // ao trocar de playlist a busca é limpa; na abertura do app (sem playlist anterior) mantém a restaurada
             ...(prevUrl ? { filterText: '' } : {})
           })
@@ -178,6 +191,8 @@ export const usePlaylist = create<PlaylistState>((set, get) => ({
     }),
 
   setSort: (sortId) => set({ sortId }),
+  moveTrack: (rowId, position, currentIds) =>
+    set({ customOrder: moveToPosition(currentIds, rowId, position), sortId: CUSTOM_SORT_ID }),
   setFilterText: (filterText) => set({ filterText }),
   setAvailabilityFilter: (availabilityFilter) => set({ availabilityFilter }),
 

@@ -60,6 +60,55 @@ export function sortTracks(tracks: Track[], sort: SortSpec, pref: AudioPreferenc
   })
 }
 
+// ---------- ordem personalizada ----------
+
+/** sortId da ordem montada à mão (mover faixas pelo número da posição). Não está em SORT_PRESETS. */
+export const CUSTOM_SORT_ID = 'custom'
+export const CUSTOM_SORT_LABEL = 'Personalizada'
+
+/**
+ * Aplica uma ordem manual (lista de rowIds). Faixas que não estão nela (ex.: chegaram depois)
+ * vão para o fim, na ordem da playlist; ids que saíram da playlist são ignorados.
+ */
+export function applyCustomOrder(tracks: Track[], custom: string[]): Track[] {
+  const pos = new Map(custom.map((id, i) => [id, i]))
+  return [...tracks].sort((a, b) => {
+    const pa = pos.get(a.rowId)
+    const pb = pos.get(b.rowId)
+    if (pa != null && pb != null) return pa - pb
+    if (pa != null) return -1
+    if (pb != null) return 1
+    return a.index - b.index
+  })
+}
+
+/** Ordena pela opção escolhida em "Ordenar" (preset ou personalizada). */
+export function orderTracks(tracks: Track[], sortId: string, customOrder: string[] | null, pref: AudioPreference = 'best'): Track[] {
+  if (sortId === CUSTOM_SORT_ID && customOrder) return applyCustomOrder(tracks, customOrder)
+  const sort = (SORT_PRESETS.find((p) => p.id === sortId) ?? SORT_PRESETS[0]).sort
+  return sortTracks(tracks, sort, pref)
+}
+
+/**
+ * Move `id` para a posição `position` (1 = primeira), deslocando as demais.
+ * Ex.: da 60 para a 2 → a que estava na 2 vai para a 3, e assim por diante. Posição fora da faixa é limitada.
+ */
+export function moveToPosition(ids: string[], id: string, position: number): string[] {
+  const from = ids.indexOf(id)
+  if (from < 0) return ids
+  const out = ids.filter((x) => x !== id)
+  const to = Math.min(Math.max(Math.round(position) - 1, 0), out.length)
+  out.splice(to, 0, id)
+  return out
+}
+
+// ---------- numeração ----------
+
+/** Prefixo da numeração de arquivos ("07", "007"…): largura mínima 2, ou a do total. */
+export function numberPrefix(n: number, total: number): string {
+  return String(n).padStart(Math.max(2, String(total).length), '0')
+}
+
 // ---------- filtros ----------
 
 /**

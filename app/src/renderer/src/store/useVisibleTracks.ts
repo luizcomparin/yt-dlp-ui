@@ -1,28 +1,38 @@
 import { useMemo } from 'react'
-import { filterTracks, pickFormat, SORT_PRESETS, sortTracks } from '@shared/tracks'
+import { filterTracks, orderTracks, pickFormat } from '@shared/tracks'
 import type { Track } from '@shared/ipc'
 import { usePlaylist } from './playlist'
 import { useQueue } from './queue'
 import { useSettings } from './settings'
 
 /**
- * Faixas visíveis: filtradas (R6 + busca) e ordenadas (R4).
- * A ordem resultante é também a ordem em que as selecionadas serão baixadas.
+ * Todas as faixas na ordem escolhida em "Ordenar" (R4, preset ou personalizada), sem filtros.
+ * É a base das posições (coluna #, numeração dos arquivos, mover faixa).
  */
-export function useVisibleTracks(): Track[] {
+export function useOrderedTracks(): Track[] {
   const tracks = usePlaylist((s) => s.tracks)
   const order = usePlaylist((s) => s.order)
   const sortId = usePlaylist((s) => s.sortId)
+  const customOrder = usePlaylist((s) => s.customOrder)
+  const pref = useSettings((s) => s.settings?.audioFormat ?? 'best')
+  return useMemo(
+    () => orderTracks(order.map((id) => tracks[id]).filter(Boolean), sortId, customOrder, pref),
+    [tracks, order, sortId, customOrder, pref]
+  )
+}
+
+/**
+ * Faixas visíveis: as ordenadas (`useOrderedTracks`) filtradas por R6 + busca (o filtro preserva a ordem).
+ * A ordem resultante é também a ordem em que as selecionadas serão baixadas.
+ */
+export function useVisibleTracks(ordered: Track[]): Track[] {
   const filterText = usePlaylist((s) => s.filterText)
   const availability = usePlaylist((s) => s.availabilityFilter)
-  const pref = useSettings((s) => s.settings?.audioFormat ?? 'best')
   const errorVideoIds = useErrorVideoIds()
-
-  return useMemo(() => {
-    const list = order.map((id) => tracks[id]).filter(Boolean)
-    const sort = (SORT_PRESETS.find((p) => p.id === sortId) ?? SORT_PRESETS[0]).sort
-    return sortTracks(filterTracks(list, { text: filterText, availability, errorVideoIds }), sort, pref)
-  }, [tracks, order, sortId, filterText, availability, pref, errorVideoIds])
+  return useMemo(
+    () => filterTracks(ordered, { text: filterText, availability, errorVideoIds }),
+    [ordered, filterText, availability, errorVideoIds]
+  )
 }
 
 /** Vídeos cujo job mais recente está em ERRO na pasta de destino atual (filtro "Erros de download"). */
@@ -45,10 +55,14 @@ export function useErrorVideoIds(): ReadonlySet<string> {
  * Versão sem hook, para uso fora de componentes (ex.: M3U automático ao terminar a fila).
  */
 export function currentOrderedIds(): string[] {
-  const { tracks, order, sortId } = usePlaylist.getState()
+  return currentOrderedTracks().map((t) => t.videoId)
+}
+
+/** Igual a `useOrderedTracks`, sem hook (lê o estado na hora). */
+export function currentOrderedTracks(): Track[] {
+  const { tracks, order, sortId, customOrder } = usePlaylist.getState()
   const pref = useSettings.getState().settings?.audioFormat ?? 'best'
-  const sort = (SORT_PRESETS.find((p) => p.id === sortId) ?? SORT_PRESETS[0]).sort
-  return sortTracks(order.map((id) => tracks[id]).filter(Boolean), sort, pref).map((t) => t.videoId)
+  return orderTracks(order.map((id) => tracks[id]).filter(Boolean), sortId, customOrder, pref)
 }
 
 /** Gera o .m3u8 da playlist carregada na pasta de destino (R10). */

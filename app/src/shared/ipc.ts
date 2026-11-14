@@ -87,8 +87,10 @@ export interface Settings {
   antiBlock: AntiBlockProfile
   /** `--limit-rate` (ex.: "2M"); vazio = sem limite. */
   limitRate: string
-  /** Prefixa o nome com a posição na ordem escolhida ("001 - Título"). */
+  /** Prefixa o nome com um número na ordem escolhida ("001 - Título"). */
   numberFiles: boolean
+  /** Como numerar: 'batch' = 01, 02… dentro de cada lote baixado (padrão); 'position' = posição na playlist (coluna #). */
+  numberMode: NumberMode
   /** Cookies do navegador (R12): '' = desligado. */
   cookiesBrowser: CookieBrowser | ''
   /** Perfil do navegador (opcional; vazio = padrão). */
@@ -107,6 +109,8 @@ export interface Settings {
   notifyOnFinish: boolean
 }
 
+export type NumberMode = 'batch' | 'position'
+
 export type CookieBrowser = 'firefox' | 'chrome' | 'edge' | 'brave' | 'opera' | 'vivaldi' | 'chromium' | 'safari'
 
 /** Configurações que um preset guarda/aplica (pasta de destino e caminhos ficam de fora). */
@@ -115,6 +119,7 @@ export const PRESET_KEYS = [
   'cropThumbnail',
   'outputTemplate',
   'numberFiles',
+  'numberMode',
   'antiBlock',
   'limitRate',
   'extraArgs'
@@ -208,6 +213,10 @@ export interface EnqueueItem {
   playlistId: string | null
   /** Escolha manual de formato (format_id). `undefined` = preferência das configurações. */
   formatId?: string
+  /** Número do arquivo com "Numerar arquivos" (posição na ordem escolhida). `undefined` = posição no lote. */
+  number?: number
+  /** Total usado na largura do número (tamanho da playlist). */
+  numberTotal?: number
 }
 
 export type QueueEvent =

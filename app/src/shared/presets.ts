@@ -5,9 +5,18 @@ export function presetValuesFrom(s: Settings): PresetValues {
   return Object.fromEntries(PRESET_KEYS.map((k) => [k, s[k]])) as PresetValues
 }
 
+/** Valores para chaves que presets antigos (salvos antes de a chave existir) não têm. */
+const PRESET_FALLBACK: Partial<PresetValues> = { numberMode: 'batch' }
+
+/** Valores completos de um preset (completa chaves ausentes em presets antigos). */
+export const presetValuesOf = (p: Preset): PresetValues => ({ ...PRESET_FALLBACK, ...p.values }) as PresetValues
+
 /** Preset cujos valores são iguais às configurações atuais (para mostrar qual está ativo). */
 export function matchingPreset(s: Settings, presets: Preset[]): Preset | null {
-  return presets.find((p) => PRESET_KEYS.every((k) => p.values[k] === s[k])) ?? null
+  return presets.find((p) => {
+    const v = presetValuesOf(p)
+    return PRESET_KEYS.every((k) => v[k] === s[k])
+  }) ?? null
 }
 
 /** Cria/atualiza um preset pelo nome (nome igual, ignorando caixa, sobrescreve). */

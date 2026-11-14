@@ -6,10 +6,12 @@ import { usePlaylist } from './playlist'
 //  - ui.session           → última playlist aberta, ordenação, filtro "Exibir", busca
 //  - ui.sel:<url>         → seleção e formatos escolhidos daquela playlist
 //  - ui.scroll:<url>      → posição de rolagem da tabela
+//  - ui.order:<url>       → ordem "Personalizada" (rowIds) daquela playlist
 
 const SESSION_KEY = 'ui.session'
 const selKey = (url: string): string => `ui.sel:${url}`
 export const scrollKey = (url: string): string => `ui.scroll:${url}`
+const orderKey = (url: string): string => `ui.order:${url}`
 
 interface Session {
   url: string
@@ -59,6 +61,12 @@ export function savedSelection(url: string): { selected: Record<string, boolean>
   return { selected, formatOverride: s.formatOverride ?? {} }
 }
 
+/** Ordem "Personalizada" salva de uma playlist, ou null. */
+export function savedCustomOrder(url: string): string[] | null {
+  const o = read<string[]>(orderKey(url))
+  return Array.isArray(o) && o.length ? o : null
+}
+
 /** Última URL aberta (para preencher o campo do cabeçalho). */
 export const lastUrl = (): string => read<Session>(SESSION_KEY)?.url ?? ''
 
@@ -86,7 +94,8 @@ export function startSession(): void {
       st.availabilityFilter !== prev.availabilityFilter ||
       st.filterText !== prev.filterText ||
       st.selected !== prev.selected ||
-      st.formatOverride !== prev.formatOverride
+      st.formatOverride !== prev.formatOverride ||
+      st.customOrder !== prev.customOrder
     if (!changed) return
     if (timer) clearTimeout(timer)
     timer = setTimeout(() => {
@@ -99,6 +108,7 @@ export function startSession(): void {
         const off: string[] = []
         for (const [id, v] of Object.entries(cur.selected)) (v ? on : off).push(id)
         write(selKey(cur.url), { on, off, formatOverride: cur.formatOverride } satisfies SavedSelection)
+        if (cur.customOrder) write(orderKey(cur.url), cur.customOrder)
       }
     }, 500)
   })

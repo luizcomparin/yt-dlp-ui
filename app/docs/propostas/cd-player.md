@@ -89,7 +89,7 @@ Por isso, qualquer caminho para CD exige **conversão**.
 | Log de erros ([errors](../modulos/errors.md)) | Falhas de conversão |
 
 ## 6. Pré-requisito: numeração pela posição na playlist
-**Hoje:** a opção "Numerar arquivos" (`numberFiles`) numera **pela ordem do lote enfileirado**, e não pelo "#" da playlist. Se você enfileirar 25 faixas depois, elas recebem `01…25`.
+**Hoje:** a opção "Numerar arquivos" (`numberFiles`) numera por padrão **pela ordem do lote enfileirado** (`numberMode: 'batch'`): se você enfileirar 25 faixas depois, elas recebem `01…25`. Já existe o modo `position`, que usa o "#" da ordem escolhida (inclusive a ordem personalizada), mas ele é aplicado no download.
 
 **Para CD:** a numeração precisa seguir sempre a **posição na playlist** (ou a ordem escolhida), aplicada **na exportação**, não no download.
 
