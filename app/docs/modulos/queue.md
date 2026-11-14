@@ -113,7 +113,15 @@ Perfis em `src/shared/antiblock.ts`. Valem para o download e para o enriquecimen
 - **Ao fechar:** os downloads são interrompidos (o `.part` fica) e devolvidos à fila.
 
 ## Numeração (opcional)
-Com "Numerar arquivos na ordem escolhida", cada lote recebe o prefixo `01 - `, `02 - `… (largura mínima 2, ou mais conforme o tamanho do lote), na ordem em que foi enfileirado.
+Com "Numerar arquivos na ordem escolhida", o arquivo recebe o prefixo `01 - `, `02 - `…
+
+- **Modo** (`settings.numberMode`, entra nos presets):
+  - **`batch` — por download (padrão):** `01, 02…` dentro de cada lote. Baixar as faixas 51–60 gera `01 -` … `10 -`.
+  - **`position` — pela posição na playlist:** o número da coluna # (ordem escolhida). Baixar as faixas 51–60 gera `051 -` … `060 -` (largura pelo total da playlist).
+- **Número calculado na UI:** a UI envia em cada item (`EnqueueItem.number`/`numberTotal`) o número que mostrou na prévia do título ([ui-playlist](ui-playlist.md#prévia-da-numeração)). No modo lote, só as faixas que viram arquivo novo são numeradas: já baixadas (archive), já na fila e re-tentativas de erro ficam de fora, então não há buracos na sequência (antes, faixas já no archive consumiam um número).
+- **Sem número** no item: usa a ordem dentro do lote.
+- **Presets antigos** (sem `numberMode`) valem como `batch` (`presetValuesOf`).
+- **Largura:** mínima 2, ou a do total (`numberPrefix` em `src/shared/tracks.ts`, usado por `numberedTemplate`).
 
 ## Interface (IPC)
 `queue:list`, `queue:add`, `queue:pause-all`, `queue:resume-all`, `queue:pause-job`, `queue:resume-job`, `queue:retry-job`, `queue:remove-job`, `queue:clear-finished`, `archive:ids`.

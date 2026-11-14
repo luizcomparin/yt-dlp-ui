@@ -160,9 +160,11 @@ export function addToQueue(items: EnqueueItem[]): { added: number; retried: numb
     createdAt: now,
     startedAt: null,
     finishedAt: null,
-    // formato e nome são fixados no momento de enfileirar (a ordem do lote define a numeração)
+    // formato e nome são fixados no momento de enfileirar; o número vem da UI (posição na ordem escolhida) ou, sem ele, da ordem no lote
     format: item.formatId ?? formatSelector(s.audioFormat),
-    outputTemplate: s.numberFiles ? numberedTemplate(s.outputTemplate, i + 1, fresh.length) : s.outputTemplate,
+    outputTemplate: s.numberFiles
+      ? numberedTemplate(s.outputTemplate, item.number ?? i + 1, item.numberTotal ?? fresh.length)
+      : s.outputTemplate,
     tempPath: null
   }))
   repo?.saveMany(created)

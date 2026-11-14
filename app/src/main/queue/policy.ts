@@ -1,3 +1,4 @@
+import { numberPrefix } from '@shared/tracks'
 import { classifyError } from '../ytdlp/errors'
 
 // Decide o que fazer quando um processo de download termina. Função pura (testada em policy.test.ts).
@@ -51,8 +52,7 @@ export function decideOutcome(x: ExitInfo): Outcome {
   return { kind: 'error', error: raw, errorKind: c.kind }
 }
 
-/** Template com prefixo numérico da posição no lote ("001 - %(title)s.%(ext)s"). */
+/** Template com prefixo numérico da posição ("001 - %(title)s.%(ext)s"). */
 export function numberedTemplate(template: string, n: number, total: number): string {
-  const width = Math.max(2, String(total).length)
-  return `${String(n).padStart(width, '0')} - ${template}`
+  return `${numberPrefix(n, total)} - ${template}`
 }

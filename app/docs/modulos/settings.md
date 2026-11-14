@@ -15,6 +15,7 @@
 | `cropThumbnail` | `true` | Capa quadrada |
 | `audioFormat` | `best` | `best` / `opus` / `m4a` |
 | `numberFiles` | `false` | Prefixo `001 - ` |
+| `numberMode` | `batch` | `batch` = 01… em cada lote baixado; `position` = posição na playlist (coluna #) |
 | `antiBlock` | `safe` | Perfil anti-bloqueio |
 | `limitRate` | `""` | `--limit-rate` |
 | `extraArgs` | `""` | Argumentos extras do yt-dlp |

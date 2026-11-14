@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import type { AntiBlockProfile, CookieBrowser, CookiesTestResult, Settings } from '@shared/ipc'
+import type { AntiBlockProfile, CookieBrowser, CookiesTestResult, NumberMode, Settings } from '@shared/ipc'
 import { PROFILES } from '@shared/antiblock'
-import { matchingPreset, presetValuesFrom, upsertPreset } from '@shared/presets'
+import { matchingPreset, presetValuesFrom, presetValuesOf, upsertPreset } from '@shared/presets'
 import { useSettings } from '@renderer/store/settings'
 
 const input =
@@ -70,6 +70,19 @@ export function SettingsPanel() {
         <span>Numerar arquivos na ordem escolhida</span>
         <span className="text-white/30">("001 - Título")</span>
       </label>
+      {settings.numberFiles && (
+        <div className="space-y-1 pl-5">
+          <select className={select} value={settings.numberMode} onChange={(e) => void save({ numberMode: e.target.value as NumberMode })}>
+            <option value="batch">Por download: 01, 02… em cada lote baixado</option>
+            <option value="position">Pela posição na playlist (coluna #)</option>
+          </select>
+          <p className="text-white/40">
+            {settings.numberMode === 'batch'
+              ? 'Baixar as faixas 51 a 60 gera 01 a 10.'
+              : 'Baixar as faixas 51 a 60 gera 51 a 60 (largura pelo total da playlist: 051…).'}
+          </p>
+        </div>
+      )}
 
       <div className="space-y-1">
         <span className="text-white/60">Proteção contra bloqueio do YouTube</span>
@@ -183,7 +196,7 @@ function PresetsSection({ settings, save }: SectionProps) {
           value={active?.id ?? ''}
           onChange={(e) => {
             const p = settings.presets.find((x) => x.id === e.target.value)
-            if (p) void save({ ...p.values })
+            if (p) void save(presetValuesOf(p))
           }}
         >
           <option value="" disabled>{settings.presets.length ? '(configuração personalizada)' : '(nenhum preset salvo)'}</option>

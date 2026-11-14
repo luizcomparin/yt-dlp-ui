@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { AudioFormat, Track } from './ipc'
-import { filterTracks, formatLabel, formatSelector, needsReplacement, pickFormat, sortTracks } from './tracks'
+import { applyCustomOrder, CUSTOM_SORT_ID, filterTracks, formatLabel, formatSelector, moveToPosition, needsReplacement, numberPrefix, orderTracks, pickFormat, sortTracks } from './tracks'
 
 const fmt = (formatId: string, ext: string, acodec: string, abr: number, extra: Partial<AudioFormat> = {}): AudioFormat => ({
   formatId, ext, acodec, abr, asr: 48000, filesize: abr * 1000, filesizeIsEstimate: false, note: null, language: null, drc: false, ...extra
@@ -108,5 +108,39 @@ describe('pickFormat / formatSelector', () => {
   it('rótulo', () => {
     expect(formatLabel(F140)).toBe('aac 129k')
     expect(formatLabel(F251DRC)).toBe('opus 150k (drc)')
+  })
+})
+
+describe('ordem personalizada', () => {
+  const list = Array.from({ length: 60 }, (_, i) => `id${i + 1}`)
+
+  it('mover da 60 para a 2 desloca as seguintes uma posição para baixo', () => {
+    const out = moveToPosition(list, 'id60', 2)
+    expect(out.slice(0, 4)).toEqual(['id1', 'id60', 'id2', 'id3'])
+    expect(out).toHaveLength(60)
+    expect(out.indexOf('id59')).toBe(59)
+  })
+  it('mover para baixo e posições fora da faixa', () => {
+    expect(moveToPosition(['a', 'b', 'c', 'd'], 'a', 3)).toEqual(['b', 'c', 'a', 'd'])
+    expect(moveToPosition(['a', 'b', 'c'], 'a', 99)).toEqual(['b', 'c', 'a'])
+    expect(moveToPosition(['a', 'b', 'c'], 'c', 0)).toEqual(['c', 'a', 'b'])
+    expect(moveToPosition(['a', 'b'], 'x', 1)).toEqual(['a', 'b'])
+  })
+  it('faixas fora da ordem manual vão para o fim, na ordem da playlist', () => {
+    const ts = [track(1), track(2), track(3), track(4)]
+    expect(ids(applyCustomOrder(ts, ['id3', 'gone', 'id1']))).toEqual([3, 1, 2, 4])
+  })
+  it('orderTracks: personalizada sem ordem salva cai na ordem da playlist', () => {
+    const ts = [track(2), track(1)]
+    expect(ids(orderTracks(ts, CUSTOM_SORT_ID, null))).toEqual([1, 2])
+    expect(ids(orderTracks(ts, CUSTOM_SORT_ID, ['id2', 'id1']))).toEqual([2, 1])
+    expect(ids(orderTracks(ts, 'playlist-rev', ['id1', 'id2']))).toEqual([2, 1])
+  })
+})
+
+describe('numberPrefix', () => {
+  it('largura mínima 2 e cresce com o total', () => {
+    expect(numberPrefix(3, 9)).toBe('03')
+    expect(numberPrefix(7, 612)).toBe('007')
   })
 })

@@ -9,7 +9,16 @@ import { COLS, TrackRow } from './TrackRow'
 const ROW_HEIGHT = 52
 
 /** Tabela virtualizada: só as linhas visíveis (+ margem) existem no DOM, mesmo com milhares de faixas. */
-export function TrackTable({ tracks }: { tracks: Track[] }) {
+interface Props {
+  tracks: Track[]
+  /** Posição de cada linha na ordem escolhida (coluna #). */
+  positions: ReadonlyMap<string, number>
+  total: number
+  /** Prévia do prefixo de numeração por linha ("007"); null = "Numerar arquivos" desligado. */
+  numberLabels: ReadonlyMap<string, string> | null
+}
+
+export function TrackTable({ tracks, positions, total, numberLabels }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const visibleIds = useMemo(() => tracks.map((t) => t.rowId), [tracks])
   const selectable = useMemo(() => tracks.filter((t) => !isUnavailable(t.availability)).map((t) => t.rowId), [tracks])
@@ -58,7 +67,7 @@ export function TrackTable({ tracks }: { tracks: Track[] }) {
             title="Selecionar todas as visíveis"
           />
         </span>
-        <span className={`${COLS.index} text-right`}>#</span>
+        <span className={`${COLS.index} text-right`} title="Posição na ordem escolhida. Clique no número de uma faixa para movê-la.">#</span>
         <span className={COLS.thumb} />
         <span className="flex-1">Título</span>
         <span className={`${COLS.date} text-right`}>Publicado</span>
@@ -78,7 +87,13 @@ export function TrackTable({ tracks }: { tracks: Track[] }) {
                 key={v.key}
                 style={{ position: 'absolute', top: 0, left: 0, right: 0, height: ROW_HEIGHT, transform: `translateY(${v.start}px)` }}
               >
-                <TrackRow rowId={tracks[v.index].rowId} visibleIds={visibleIds} />
+                <TrackRow
+                  rowId={tracks[v.index].rowId}
+                  visibleIds={visibleIds}
+                  position={positions.get(tracks[v.index].rowId) ?? 0}
+                  total={total}
+                  numberLabel={numberLabels?.get(tracks[v.index].rowId)}
+                />
               </div>
             ))}
           </div>

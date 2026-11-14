@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
 import type { AudioPreference } from '@shared/ipc'
-import { AVAILABILITY_FILTERS, isUnavailable, matchesAvailability, SORT_PRESETS, type AvailabilityFilter } from '@shared/tracks'
+import { AVAILABILITY_FILTERS, CUSTOM_SORT_ID, CUSTOM_SORT_LABEL, isUnavailable, matchesAvailability, numberPrefix, SORT_PRESETS, type AvailabilityFilter } from '@shared/tracks'
 import { alreadyInFolder, fileMatch, usePlaylist } from '@renderer/store/playlist'
 import { useSettings } from '@renderer/store/settings'
 import { useQueue } from '@renderer/store/queue'
-import { useErrorVideoIds, useSelectionSummary, useVisibleTracks, writeCurrentM3u } from '@renderer/store/useVisibleTracks'
+import { useErrorVideoIds, useOrderedTracks, useSelectionSummary, useVisibleTracks, writeCurrentM3u } from '@renderer/store/useVisibleTracks'
 import { formatBytes, formatDuration } from '@renderer/lib/format'
 import { TrackTable } from './TrackTable'
 import { ReplaceDialog } from './ReplaceDialog'
@@ -28,6 +28,7 @@ export function PlaylistView() {
   const error = usePlaylist((s) => s.error)
   const url = usePlaylist((s) => s.url)
   const sortId = usePlaylist((s) => s.sortId)
+  const hasCustomOrder = usePlaylist((s) => !!s.customOrder)
   const filterText = usePlaylist((s) => s.filterText)
   const availabilityFilter = usePlaylist((s) => s.availabilityFilter)
   const { load, cancel, setSort, setFilterText, setAvailabilityFilter, setSelected, invertSelection } = usePlaylist.getState()
@@ -38,7 +39,10 @@ export function PlaylistView() {
   const replacing = usePlaylist((s) => s.replacing)
   const setReplacing = usePlaylist((s) => s.setReplacing)
   const fileKeys = usePlaylist((s) => s.fileKeys)
-  const visible = useVisibleTracks()
+  const ordered = useOrderedTracks()
+  const visible = useVisibleTracks(ordered)
+  // posição de cada linha na ordem escolhida (independe dos filtros): coluna #, numeração e mover faixa
+  const positions = useMemo(() => new Map(ordered.map((t, i) => [t.rowId, i + 1])), [ordered])
   const errorVideoIds = useErrorVideoIds()
   const selection = useSelectionSummary()
   const [notice, setNotice] = useState<string | null>(null)
@@ -66,24 +70,46 @@ export function PlaylistView() {
   const queueByVideo = useQueue((s) => s.byVideo)
   const outputDir = useSettings((s) => s.settings?.outputDir)
   const selectedMap = usePlaylist((s) => s.selected)
-  const newToDownload = useMemo(() => {
-    let n = 0
+  // `batch` = as que viram arquivo NOVO no próximo "Baixar selecionadas" (base da numeração por lote);
+  // as com erro também contam no botão, mas são re-tentadas no job antigo (mantêm o nome que já tinham)
+  const { newToDownload, batch } = useMemo(() => {
+    let retry = 0
+    const batch: string[] = []
     for (const t of visible) {
       if (!selectedMap[t.rowId] || isUnavailable(t.availability) || archived[t.videoId]) continue
       const jid = queueByVideo[t.videoId]
       const j = jid ? queueJobs[jid] : undefined
-      if (j && j.outputDir === outputDir && j.status !== 'error') continue
-      n++
+      if (j && j.outputDir === outputDir) {
+        if (j.status === 'error') retry++
+        continue
+      }
+      batch.push(t.rowId)
     }
-    return n
+    return { newToDownload: batch.length + retry, batch }
   }, [visible, selectedMap, archived, queueByVideo, queueJobs, outputDir])
+
+  // numeração dos arquivos ("Numerar arquivos"): mesmo número na prévia do título e no download
+  const numberFiles = useSettings((s) => !!s.settings?.numberFiles)
+  const numberMode = useSettings((s) => s.settings?.numberMode ?? 'batch')
+  const numbering = useMemo((): Map<string, { number: number; total: number }> => {
+    if (numberMode === 'position') return new Map(ordered.map((t, i) => [t.rowId, { number: i + 1, total: ordered.length }]))
+    return new Map(batch.map((id, i) => [id, { number: i + 1, total: batch.length }]))
+  }, [numberMode, ordered, batch])
+  const numberLabels = useMemo(
+    () => (numberFiles ? new Map([...numbering].map(([id, n]) => [id, numberPrefix(n.number, n.total)])) : null),
+    [numberFiles, numbering]
+  )
 
   /** Enfileira as selecionadas na ordem visível (= ordem escolhida, R4). */
   const enqueueSelected = async (): Promise<void> => {
     const { selected, formatOverride, playlist: pl } = usePlaylist.getState()
     const items = visible
       .filter((t) => selected[t.rowId] && !isUnavailable(t.availability))
-      .map((t) => ({ videoId: t.videoId, url: t.url, title: t.title, playlistId: pl?.id ?? null, formatId: formatOverride[t.rowId] }))
+      .map((t) => ({
+        videoId: t.videoId, url: t.url, title: t.title, playlistId: pl?.id ?? null, formatId: formatOverride[t.rowId],
+        // fora de `numbering` (lote): já na fila/baixadas/re-tentativas, que não geram arquivo novo
+        number: numbering.get(t.rowId)?.number, numberTotal: numbering.get(t.rowId)?.total
+      }))
     if (!items.length) return
     const r = await window.api.queue.add(items)
     setNotice(
@@ -175,10 +201,16 @@ export function PlaylistView() {
         />
         <label className="flex items-center gap-1.5">
           <span className="text-white/50">Ordenar</span>
-          <select className={control} value={sortId} onChange={(e) => setSort(e.target.value)}>
+          <select
+            className={control}
+            value={sortId}
+            onChange={(e) => setSort(e.target.value)}
+            title="Também é a ordem de download. Para mover uma faixa, clique no número da posição (#) e digite a nova posição."
+          >
             {SORT_PRESETS.map((p) => (
               <option key={p.id} value={p.id}>{p.label}</option>
             ))}
+            {(hasCustomOrder || sortId === CUSTOM_SORT_ID) && <option value={CUSTOM_SORT_ID}>{CUSTOM_SORT_LABEL}</option>}
           </select>
         </label>
         <label className="flex items-center gap-1.5">
@@ -216,7 +248,7 @@ export function PlaylistView() {
         )}
       </div>
 
-      <TrackTable tracks={visible} />
+      <TrackTable tracks={visible} positions={positions} total={ordered.length} numberLabels={numberLabels} />
 
       {replacing && <ReplaceDialog rowId={replacing} onClose={() => setReplacing(null)} />}
 

@@ -16,6 +16,7 @@ const defaults = (): Settings => ({
   antiBlock: 'safe',
   limitRate: '',
   numberFiles: false,
+  numberMode: 'batch',
   cookiesBrowser: '',
   cookiesProfile: '',
   cookiesFile: '',

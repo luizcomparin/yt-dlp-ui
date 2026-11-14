@@ -39,6 +39,26 @@ PlaylistView ─▶ TrackTable (virtualizada) ─▶ TrackRow (seletores por fai
 - **Valores ausentes vão sempre para o fim**, em qualquer direção. Ex.: faixa sem data porque o enriquecimento ainda não chegou. A UI avisa "N faixas ainda sem data".
 - **Empates** mantêm a ordem da playlist.
 
+## Coluna # e ordem personalizada
+- **A coluna # mostra a posição na ordem escolhida** (1, 2, 3… sobre todas as faixas, sem considerar filtros e busca). O número original da playlist do YouTube aparece no tooltip quando é diferente.
+- **Mover uma faixa:** clicar no número abre um campo; digitar a nova posição e Enter (ou sair do campo) move a faixa; Esc cancela. As demais se deslocam: mover da 60 para a 2 faz a que estava na 2 ir para a 3, e assim por diante. Posições fora da faixa vão para a primeira/última.
+- **"Personalizada":** ao mover, "Ordenar" passa para a opção **Personalizada** (`CUSTOM_SORT_ID`), que só aparece no seletor depois que existe uma ordem manual. O ponto de partida é a ordem exibida no momento (ex.: mover a partir de "Mais antigas" parte dessa ordem).
+- **Trocar para outro preset** mantém a ordem manual guardada; voltar para "Personalizada" a restaura. Mover de novo a partir de um preset substitui a ordem manual.
+- **Faixas novas** (que entram na playlist depois) vão para o fim da ordem manual, na ordem da playlist; faixas que saíram são ignoradas.
+- **Lógica pura** em `src/shared/tracks.ts`: `moveToPosition`, `applyCustomOrder`, `orderTracks` (preset ou personalizada). `useOrderedTracks()` dá a lista ordenada sem filtros (base das posições) e `useVisibleTracks(ordered)` aplica os filtros, preservando a ordem.
+- A ordem personalizada é também a ordem de download e do M3U.
+
+## Prévia da numeração
+Com **"Numerar arquivos na ordem escolhida"** ligado (configurações), o título mostra o prefixo que o arquivo vai receber (`01 - Título`). O `PlaylistView` calcula o número de cada linha (`numbering`) e envia **o mesmo número** no download (`number`/`numberTotal` do item), então a prévia e o arquivo coincidem. Depende do modo (`settings.numberMode`, ver [queue](queue.md#numeração-opcional)):
+
+| Modo | Quais linhas mostram número | Número |
+|---|---|---|
+| **Por download** (`batch`, padrão) | Só as que viram arquivo novo no próximo "Baixar selecionadas": selecionadas, visíveis, disponíveis, ainda não baixadas e fora da fila (as com erro são re-tentadas com o nome antigo) | 1…N dentro desse lote, na ordem visível; largura pelo N |
+| **Pela posição** (`position`) | Todas | Posição da coluna #; largura pelo total da playlist |
+
+- **Por download, o número muda** com a seleção, os filtros, a busca e o andamento da fila: é uma prévia do próximo lote, não um número fixo da faixa.
+- **↓ de uma linha:** por download gera `01`; pela posição, o número da coluna #.
+
 ## Filtros (R6)
 - **"Exibir"** (`AvailabilityFilter` em `src/shared/tracks.ts`). Cada opção mostra a contagem.
 
@@ -87,6 +107,7 @@ A barra inferior mostra a contagem, a duração e o tamanho total das selecionad
 | `ui.session` | Última playlist (URL), ordenação, filtro "Exibir", busca | Na abertura do app: a playlist é recarregada sozinha (do cache, na hora; a listagem atualiza em segundo plano) |
 | `ui.sel:<url>` | Seleção (marcadas/desmarcadas explicitamente) e formatos escolhidos por faixa | Ao carregar aquela playlist. Faixas novas seguem a regra padrão |
 | `ui.scroll:<url>` | Posição de rolagem da tabela | Uma vez, quando as faixas daquela playlist aparecem |
+| `ui.order:<url>` | Ordem "Personalizada" (rowIds) | Ao carregar aquela playlist. Sem ordem salva, "Personalizada" volta para "Ordem da playlist" |
 
 - **Gravação:** com debounce de 500 ms (sessão/seleção) e 300 ms (rolagem). A seleção só é gravada depois que a playlist tem faixas, para não gravar vazio durante o carregamento.
 - **Outra playlist:** trocar de playlist limpa a busca. Na abertura do app, a busca restaurada é mantida.

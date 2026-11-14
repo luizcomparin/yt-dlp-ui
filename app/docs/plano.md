@@ -112,6 +112,7 @@ A comunicação UI ↔ backend é por eventos (IPC): progresso, status por faixa
 - A ordenação é feita **no app**. A fila recebe os IDs já na ordem escolhida.
 - "Mais recentes/antigas" dependem do `upload_date` do enriquecimento. Até ele chegar, a UI mostra um indicador.
 - **Opcional:** prefixo numérico no nome (`01 - Título`) refletindo a ordem escolhida.
+- **Ordem personalizada:** mover faixas pelo número da posição (opção "Personalizada"). Ver A4.
 
 ### 5.3 Formato e qualidade (R1)
 
@@ -226,6 +227,7 @@ Desligado, a capa mantém a proporção original (16:9).
 |---|---|
 | A2 | Reabrir de onde parou (última playlist, filtros, seleção, rolagem). Ver [modulos/ui-playlist.md](modulos/ui-playlist.md#reabrir-de-onde-parou-sessão) ✅ |
 | A3 | Distribuição pública: README, licença MIT, CI, release automático, página no GitHub Pages e botão "Instalar tudo" nas dependências. Ver [modulos/distribuicao.md](modulos/distribuicao.md) ✅ |
+| A4 | Ordem personalizada (mover faixa pelo número da posição), prévia da numeração no título e modo de numeração (por download, padrão, ou pela posição na playlist). Ver [modulos/ui-playlist.md](modulos/ui-playlist.md#coluna--e-ordem-personalizada) ✅ |
 | A1 | Substituir faixa indisponível por outro vídeo (link ou busca), mantendo a posição. Ver [modulos/replace.md](modulos/replace.md) ✅ |
 
 ## 8. Decisões
